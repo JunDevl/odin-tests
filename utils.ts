@@ -50,30 +50,59 @@ export const calculator = {
   divide: (num1: number, num2: number): number => num1 / num2
 }
 
-export function ceasarCipher(text: string, shift: number): string {
+export function ceasarCipher(text: string, shiftBy: number): string {
   let temp = "";
 
   if (text === "") return temp;
 
-  const alphabetCharTotal = 26;
-  const overflowingAlphabetTotal = (alphabetCharTotal * Math.floor((shift + alphabetCharTotal) / alphabetCharTotal + 1))
+  function characterIsLetter(char: string) {
+    const charCode = char.charCodeAt(0);
 
-  if (shift < 0) shift = shift + overflowingAlphabetTotal
-  else shift = (alphabetCharTotal * Math.floor((shift + alphabetCharTotal) / alphabetCharTotal + 1)) - shift
-
-  for (let [i, char] of Array.from(text).entries()) {
-    const curCharCode = char.charCodeAt(0);
-
-    if ((curCharCode < CAPITALIZED_UNICODE_START && curCharCode > CAPITALIZED_UNICODE_END) &&
-        (curCharCode < UNCAPITALIZED_UNICODE_START && curCharCode > UNCAPITALIZED_UNICODE_END))
-      continue;
-
-    
-    
+    return (charCode >= CAPITALIZED_UNICODE_START && charCode <= CAPITALIZED_UNICODE_END) ||
+    (charCode >= UNCAPITALIZED_UNICODE_START && charCode <= UNCAPITALIZED_UNICODE_END);
   }
 
-  const cipher = "";
-  return cipher;
+  function letterIsCapitalized(char: string) {
+    const charCode = char.charCodeAt(0);
+
+    return (charCode >= CAPITALIZED_UNICODE_START && charCode <= CAPITALIZED_UNICODE_END);
+  }
+
+  function shiftAndAppendLetter(shiftedCharCode: number, unicodeStartCap: number, unicodeEndCap: number) {
+    if (shiftedCharCode < unicodeStartCap) {
+      temp += String.fromCharCode(unicodeEndCap - (unicodeStartCap - shiftedCharCode))
+    } else if (shiftedCharCode > unicodeEndCap) {
+      temp += String.fromCharCode((unicodeStartCap - 1) + (shiftedCharCode - unicodeEndCap))
+    } else {
+      temp += String.fromCharCode(shiftedCharCode);
+    }
+  }
+
+  const LETTERS_TOTAL = 26;
+
+  const overflowingAlphabetTotal = (LETTERS_TOTAL * Math.floor((shiftBy / LETTERS_TOTAL)));
+
+  const convertedShiftBy = shiftBy - overflowingAlphabetTotal;
+
+  for (let [i, char] of Array.from(text).entries()) {
+    if (!characterIsLetter(char)) {
+      temp += char;
+      continue
+    };
+
+    const curCharCode = char.charCodeAt(0);
+
+    let shiftedCharCode = curCharCode + convertedShiftBy;
+
+    if (letterIsCapitalized(char)) {
+      shiftAndAppendLetter(shiftedCharCode, CAPITALIZED_UNICODE_START, CAPITALIZED_UNICODE_END);
+      continue;
+    }
+
+    shiftAndAppendLetter(shiftedCharCode, UNCAPITALIZED_UNICODE_START, UNCAPITALIZED_UNICODE_END);
+  }
+
+  return temp;
 }
 
 type numberAnalyzer = {

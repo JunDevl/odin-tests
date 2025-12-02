@@ -15,15 +15,16 @@ function capitalize(text) {
         return temp;
     for (let [i, char] of Array.from(text).entries()) {
         if (char === " " || (text[i - 1] !== " " && i - 1 >= 0)) {
-            temp = temp + char;
+            temp += char;
             continue;
         }
-        if (char.charCodeAt(0) >= CAPITALIZED_UNICODE_START && char.charCodeAt(0) <= CAPITALIZED_UNICODE_END) {
-            temp = temp + char;
+        const curCharCode = char.charCodeAt(0);
+        if (curCharCode >= CAPITALIZED_UNICODE_START && curCharCode <= CAPITALIZED_UNICODE_END) {
+            temp += char;
             continue;
         }
-        if (char.charCodeAt(0) >= UNCAPITALIZED_UNICODE_START && char.charCodeAt(0) <= UNCAPITALIZED_UNICODE_END) {
-            const capitalized = String.fromCharCode(char.charCodeAt(0) - 32);
+        if (curCharCode >= UNCAPITALIZED_UNICODE_START && curCharCode <= UNCAPITALIZED_UNICODE_END) {
+            const capitalized = String.fromCharCode(curCharCode - 32);
             temp = i - 1 >= 0 ? temp + capitalized : capitalized;
         }
     }
@@ -34,7 +35,7 @@ function reverseString(text) {
     if (text === "")
         return temp;
     for (let i = text.length - 1; i >= 0; i--)
-        temp = temp + text[i];
+        temp += text[i];
     return temp;
 }
 exports.calculator = {
@@ -43,12 +44,48 @@ exports.calculator = {
     multiply: (num1, num2) => num1 * num2,
     divide: (num1, num2) => num1 / num2
 };
-function ceasarCipher(text, shift) {
+function ceasarCipher(text, shiftBy) {
     let temp = "";
     if (text === "")
         return temp;
-    const cipher = "";
-    return cipher;
+    function characterIsLetter(char) {
+        const charCode = char.charCodeAt(0);
+        return (charCode >= CAPITALIZED_UNICODE_START && charCode <= CAPITALIZED_UNICODE_END) ||
+            (charCode >= UNCAPITALIZED_UNICODE_START && charCode <= UNCAPITALIZED_UNICODE_END);
+    }
+    function letterIsCapitalized(char) {
+        const charCode = char.charCodeAt(0);
+        return (charCode >= CAPITALIZED_UNICODE_START && charCode <= CAPITALIZED_UNICODE_END);
+    }
+    function shiftAndAppendLetter(shiftedCharCode, unicodeStartCap, unicodeEndCap) {
+        if (shiftedCharCode < unicodeStartCap) {
+            temp += String.fromCharCode(unicodeEndCap - (unicodeStartCap - shiftedCharCode));
+        }
+        else if (shiftedCharCode > unicodeEndCap) {
+            temp += String.fromCharCode((unicodeStartCap - 1) + (shiftedCharCode - unicodeEndCap));
+        }
+        else {
+            temp += String.fromCharCode(shiftedCharCode);
+        }
+    }
+    const LETTERS_TOTAL = 26;
+    const overflowingAlphabetTotal = (LETTERS_TOTAL * Math.floor((shiftBy / LETTERS_TOTAL)));
+    const convertedShiftBy = shiftBy - overflowingAlphabetTotal;
+    for (let [i, char] of Array.from(text).entries()) {
+        if (!characterIsLetter(char)) {
+            temp += char;
+            continue;
+        }
+        ;
+        const curCharCode = char.charCodeAt(0);
+        let shiftedCharCode = curCharCode + convertedShiftBy;
+        if (letterIsCapitalized(char)) {
+            shiftAndAppendLetter(shiftedCharCode, CAPITALIZED_UNICODE_START, CAPITALIZED_UNICODE_END);
+            continue;
+        }
+        shiftAndAppendLetter(shiftedCharCode, UNCAPITALIZED_UNICODE_START, UNCAPITALIZED_UNICODE_END);
+    }
+    return temp;
 }
 function analyzeArray(arr) {
     if (arr.length < 1)
